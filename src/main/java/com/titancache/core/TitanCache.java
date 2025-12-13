@@ -21,6 +21,21 @@ public class TitanCache<K, V> {
     CacheNode<K, V> head;
     CacheNode<K, V> tail;
 
+    // Reset logic
+    public void clear() {
+        lock.writeLock().lock();
+        try {
+            map.clear();
+            head.next = tail;
+            tail.prev = head;
+            hits.set(0);
+            misses.set(0);
+            evictions.set(0);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     // Ask for stats
     public CacheMetrics getMetrics() {
         int totalHits = hits.get();

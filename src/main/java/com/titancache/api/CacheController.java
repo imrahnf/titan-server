@@ -38,4 +38,10 @@ public class CacheController {
     public ResponseEntity<String> status() {
         return ResponseEntity.ok("TitanCache is running.");
     }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<String> clearCache() {
+        cache.clear();
+        return ResponseEntity.ok("Cache cleared and metrics reset.");
+    }
 }
