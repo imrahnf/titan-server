@@ -9,6 +9,6 @@ public class CacheConfig {
 
     @Bean
     public TitanCache<String, String> titanCache() {
-        return new TitanCache<>(100);
+        return new TitanCache<>(100000);
     }
 }
