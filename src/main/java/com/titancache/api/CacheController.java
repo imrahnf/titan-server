@@ -28,6 +28,11 @@ public class CacheController {
         return ResponseEntity.ok(value);
     }
 
+    @GetMapping("/metrics")
+    public ResponseEntity<CacheMetrics> getMetrics() {
+        return ResponseEntity.ok(cache.getMetrics());
+    }
+
     // Simply return status whether the application is running or not
     @GetMapping("/status")
     public ResponseEntity<String> status() {

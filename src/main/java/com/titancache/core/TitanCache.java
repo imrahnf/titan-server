@@ -1,19 +1,35 @@
 package com.titancache.core;
+
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TitanCache<K, V> {
+    // Thread safe counters
+    private final AtomicInteger hits = new AtomicInteger(0);
+    private final AtomicInteger misses = new AtomicInteger(0);
+    private final AtomicInteger evictions = new AtomicInteger(0);
+
     private int capacity;
     private Map<K, CacheNode<K, V>> map;
 
-    //
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
 
     // Sentinel nodes
     CacheNode<K, V> head;
     CacheNode<K, V> tail;
+
+    // Ask for stats
+    public CacheMetrics getMetrics() {
+        int totalHits = hits.get();
+        int totalMisses = misses.get();
+        int totalEvictions = evictions.get();
+
+        double ratio = (totalHits + totalMisses) == 0 ? 0.0 : (double) totalHits / (totalHits + totalMisses);
+
+        return new CacheMetrics(totalHits, totalMisses, totalEvictions, ratio);
+    }
 
     // Search for the key. If it exists, place it at the front of the recently used list.
     public V get(K key) {
@@ -24,8 +40,10 @@ public class TitanCache<K, V> {
                 CacheNode<K, V> temp = removeNode(map.get(key));
                 addNode(temp);
 
+                hits.incrementAndGet();
                 return temp.value;
             } else {
+                misses.incrementAndGet();
                 return null;
             }
         } finally {
@@ -51,6 +69,7 @@ public class TitanCache<K, V> {
                 CacheNode<K, V> lru = tail.prev;
 
                 removeNode(lru);
+                evictions.incrementAndGet();
                 map.remove(lru.key);
             }
 
