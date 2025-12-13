@@ -12,7 +12,9 @@ public class TitanCache<K, V> {
     private final AtomicInteger misses = new AtomicInteger(0);
     private final AtomicInteger evictions = new AtomicInteger(0);
 
-    private int capacity;
+    private final int capacity;
+    private final int maxEntrySizeBytes; // New field
+
     private Map<K, CacheNode<K, V>> map;
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -20,6 +22,19 @@ public class TitanCache<K, V> {
     // Sentinel nodes
     CacheNode<K, V> head;
     CacheNode<K, V> tail;
+
+    // Constructor
+    public TitanCache(int capacity, int maxEntrySizeBytes) {
+        this.capacity = capacity;
+        this.maxEntrySizeBytes = maxEntrySizeBytes;
+        this.map = new HashMap<>();
+
+        // Setup sentinel nodes
+        this.head = new CacheNode<>(null, null);
+        this.tail = new CacheNode<>(null, null);
+        head.next = tail;
+        tail.prev = head;
+    }
 
     // Reset logic
     public void clear() {
@@ -70,6 +85,12 @@ public class TitanCache<K, V> {
     public void put(K key, V value) {
         lock.writeLock().lock();
         try {
+            // Check the size of the item
+            if (value.toString().length() > maxEntrySizeBytes) {
+                System.err.println("Rejected huge item: " + value.toString().length() + " bytes");
+                return;
+            }
+
             // If it exists, update
             if (map.containsKey(key)) {
                 CacheNode<K, V> node = map.get(key);
@@ -98,19 +119,6 @@ public class TitanCache<K, V> {
         }
     }
 
-    // Constructor
-    public TitanCache(int capacity) {
-        this.capacity = capacity;
-        this.map = new HashMap<>();
-
-        // Create dummies
-        this.head = new CacheNode<>(null, null);
-        this.tail = new CacheNode<>(null, null);
-
-        // Setup sentinel nodes
-        head.next = tail;
-        tail.prev = head;
-    }
 
     private void addNode(CacheNode<K, V> node) {
         // Get the first node
