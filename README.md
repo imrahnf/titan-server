@@ -111,6 +111,11 @@ docker-compose up --build
 
 TitanCache includes a "Nuclear" benchmark script (`benchmark.py`) built with Python `asyncio` to simulate high-load scenarios.
 
+### Stress Test Demo
+Watch the system handle 3,000 concurrent users and 5,000+ Req/Sec:
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/20R16ATSCAw/0.jpg)](https://www.youtube.com/watch?v=20R16ATSCAw)
+
 ### Scenarios
 1.  **Realistic E-Commerce:** 90% Reads / 10% Writes (Zipfian distribution).
 2.  **Flash Sale Spike:** High concurrency (3000 users), Hot keys.
